@@ -1,7 +1,7 @@
 import React from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
-
+import "./Dashboard.css";
 function Dashboard() {
   return React.createElement(
     "div",
