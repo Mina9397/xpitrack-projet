@@ -1,35 +1,21 @@
 const express = require('express');
-const {
-  getEmployees,
-  getEmployee,
-  createEmployee,
-  updateEmployee,
-  deleteEmployee,
-} = require('../controllers/employeeController');
-const { protect, admin } = require('../middleware/auth');
-const { check } = require('express-validator');
-
 const router = express.Router();
 
-router.use(protect);
-router.use(admin);
+// Import des fonctions du contrôleur (tu dois les avoir dans employeeController.js)
+const {
+  getAllEmployees,
+  addEmployee,
+  getEmployeeById,
+  updateEmployee,
+  deleteEmployee
+} = require('../controllers/employeeController');
 
-router
-  .route('/')
-  .get(getEmployees)
-  .post(
-    [
-      check('name', 'Le nom est requis').not().isEmpty(),
-      check('email', 'Veuillez inclure un email valide').isEmail(),
-      check('role', 'Le rôle est requis').not().isEmpty(),
-    ],
-    createEmployee
-  );
+// Les routes
+router.get('/', getAllEmployees);
+router.post('/', addEmployee);
+router.get('/:id', getEmployeeById);
+router.put('/:id', updateEmployee);
+router.delete('/:id', deleteEmployee);
 
-router
-  .route('/:id')
-  .get(getEmployee)
-  .put(updateEmployee)
-  .delete(deleteEmployee);
-
+// On exporte le router
 module.exports = router;

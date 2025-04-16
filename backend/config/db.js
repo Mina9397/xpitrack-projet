@@ -1,17 +1,9 @@
 const mongoose = require('mongoose');
 
-const connectDB = async () => {
-  try {
-    const conn = await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-
-    console.log(`MongoDB connecté: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`Erreur: ${error.message}`);
-    process.exit(1);
-  }
-};
-
-module.exports = connectDB;
+const uri =mongodb+srv//nourhenetarhouni5:<8P6VZ4QaBRqTyswq>@cluster0.rtgeqof.mongodb.net/?retryWrites=true&w=majority&appName=xpitrack
+mongoose.connect(uri, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log('Connecté à MongoDB Atlas!'))
+.catch(err => console.error('Erreur de connexion:', err));
