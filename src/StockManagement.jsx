@@ -1,4 +1,3 @@
-"use client";
 import { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import { Link } from "react-router-dom";
@@ -6,7 +5,7 @@ import { useProducts } from "./ProductContext";
 import "./Stockmanagement.css"; // advanced CSS assumed here
 
 function StockManagement() {
-  const { products, setProducts } = useProducts();
+  const { products, addProduct, editProduct, deleteProduct } = useProducts();
 
   const [selectedProductId, setSelectedProductId] = useState("");
   const [productName, setProductName] = useState("");
@@ -56,20 +55,16 @@ function StockManagement() {
     };
 
     if (isEditing) {
-      const updatedProducts = products.map((product) =>
-        product.id === parseInt(selectedProductId) ? updatedProduct : product
-      );
-      setProducts(updatedProducts);
+      editProduct(updatedProduct); // Use context function to edit product
     } else {
-      setProducts([...products, updatedProduct]);
+      addProduct(updatedProduct); // Use context function to add product
     }
 
     resetForm();
   };
 
   const handleDeleteProduct = (id) => {
-    const filtered = products.filter((p) => p.id !== id);
-    setProducts(filtered);
+    deleteProduct(id); // Use context function to delete product
     if (selectedProductId === String(id)) resetForm();
   };
 

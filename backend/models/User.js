@@ -1,32 +1,32 @@
-const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-const config = require('../config/config');
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const config = require("../config/config");
 
 const UserSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Veuillez ajouter un nom'],
+    required: [true, "Veuillez ajouter un nom"],
   },
   email: {
     type: String,
-    required: [true, 'Veuillez ajouter un email'],
+    required: [true, "Veuillez ajouter un email"],
     unique: true,
     match: [
       /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-      'Veuillez ajouter un email valide',
+      "Veuillez ajouter un email valide",
     ],
   },
   password: {
     type: String,
-    required: [true, 'Veuillez ajouter un mot de passe'],
+    required: [true, "Veuillez ajouter un mot de passe"],
     minlength: 6,
     select: false,
   },
   role: {
     type: String,
-    enum: ['user', 'manager', 'admin'],
-    default: 'user',
+    enum: ["user", "manager", "admin"],
+    default: "user",
   },
   createdAt: {
     type: Date,
@@ -35,8 +35,8 @@ const UserSchema = new mongoose.Schema({
 });
 
 // Crypter le mot de passe avant l'enregistrement
-UserSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) {
+UserSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) {
     next();
   }
 
@@ -56,4 +56,4 @@ UserSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
-module.exports = mongoose.model('User', UserSchema);
+module.exports = mongoose.model("User", UserSchema);

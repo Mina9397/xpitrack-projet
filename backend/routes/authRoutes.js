@@ -1,29 +1,40 @@
-const express = require('express');
-const { register, login, getMe } = require('../controllers/authController');
-const { protect } = require('../middleware/auth');
-const { check } = require('express-validator');
-
+const express = require("express");
+const Audit = require("../models/Audit");
 const router = express.Router();
 
-router.post(
-  '/register',
-  [
-    check('name', 'Le nom est requis').not().isEmpty(),
-    check('email', 'Veuillez inclure un email valide').isEmail(),
-    check('password', 'Veuillez entrer un mot de passe avec 6 caractères ou plus').isLength({ min: 6 }),
-  ],
-  register
-);
+// Fetch all audit entries
+router.get("/", async (req, res) => {
+  try {
+    const audits = await Audit.find();
+    res.json(audits);
+  } catch (err) {
+    res.status(500).json({ message: "Error fetching audit data", error: err });
+  }
+});
 
-router.post(
-  '/login',
-  [
-    check('email', 'Veuillez inclure un email valide').isEmail(),
-    check('password', 'Le mot de passe est requis').exists(),
-  ],
-  login
-);
+// Add a new audit entry
+router.post("/add", async (req, res) => {
+  const { product, systemQty, physicalQty, difference } = req.body;
 
-router.get('/me', protect, getMe);
+  try {
+    const newAudit = new Audit({ product, systemQty, physicalQty, difference });
+    await newAudit.save();
+    res.status(201).json(newAudit);
+  } catch (err) {
+    res.status(400).json({ message: "Error adding audit data", error: err });
+  }
+});
+
+// Delete an audit entry
+router.delete("/delete/:id", async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    await Audit.findByIdAndDelete(id);
+    res.json({ message: "Audit entry deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Error deleting audit entry", error: err });
+  }
+});
 
 module.exports = router;

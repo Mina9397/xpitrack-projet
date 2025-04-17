@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import "./setting.css";
+import axios from "axios";
+
 function Settings() {
   const [newUser, setNewUser] = useState({
     name: "",
@@ -13,13 +15,20 @@ function Settings() {
     setNewUser({ ...newUser, [e.target.name]: e.target.value });
   };
 
-  const handleAddUser = (e) => {
+  const handleAddUser = async (e) => {
     e.preventDefault();
-    // You would typically send this data to the backend:
-    console.log("Adding user:", newUser);
-
-    // Clear form
-    setNewUser({ name: "", email: "", password: "" });
+    // Sending user data to the backend
+    try {
+      const response = await axios.post(
+        "http://localhost:5000/api/users", // Assuming your backend is running on localhost:5000
+        newUser
+      );
+      console.log("User added:", response.data);
+      // Clear form after successful user creation
+      setNewUser({ name: "", email: "", password: "" });
+    } catch (error) {
+      console.error("There was an error adding the user:", error);
+    }
   };
 
   return (

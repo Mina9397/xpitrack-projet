@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import axios from "axios"; // Import axios for HTTP requests
 import "./Reports.css";
 
 function Reports() {
@@ -31,19 +32,41 @@ function Reports() {
     setMethod({ ...method, [key]: !method[key] });
   };
 
-  const handleGenerate = () => {
-    alert("Report Generated ✅");
-    // TODO: handle real report generation logic
+  const handleGenerate = async () => {
+    try {
+      const response = await axios.post("/api/reports/generate", {
+        reportType,
+        category,
+        product,
+        startDate,
+        endDate,
+      });
+      alert(`Report Generated ✅\n${response.data.message}`);
+    } catch (error) {
+      console.error("Error generating report:", error);
+      alert("Failed to generate report.");
+    }
   };
 
-  const handleSaveAlert = () => {
-    alert("Alert Saved ✅");
-    // TODO: handle saving to backend
+  const handleSaveAlert = async () => {
+    try {
+      const response = await axios.post("/api/reports/alert", {
+        selectedProduct,
+        threshold,
+        expiration,
+        notify,
+        method,
+      });
+      alert(`Alert Saved ✅\n${response.data.message}`);
+    } catch (error) {
+      console.error("Error saving alert:", error);
+      alert("Failed to save alert.");
+    }
   };
 
   const handleExportPDF = () => {
     alert("PDF Exported 🧾");
-    // TODO: integrate pdf generation
+    // TODO: integrate pdf generation logic (could be done in backend)
   };
 
   return (

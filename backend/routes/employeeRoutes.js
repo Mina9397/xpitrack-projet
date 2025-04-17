@@ -1,21 +1,23 @@
-const express = require('express');
+// routes/employeeRoutes.js
+const express = require("express");
 const router = express.Router();
 
-// Import des fonctions du contrôleur (tu dois les avoir dans employeeController.js)
+// Import controller functions
 const {
-  getAllEmployees,
-  addEmployee,
-  getEmployeeById,
+  getEmployees,
+  getEmployee,
+  createEmployee,
   updateEmployee,
-  deleteEmployee
-} = require('../controllers/employeeController');
+  deleteEmployee,
+  getEmployeesByRole,
+} = require("../controllers/employeeController");
 
-// Les routes
-router.get('/', getAllEmployees);
-router.post('/', addEmployee);
-router.get('/:id', getEmployeeById);
-router.put('/:id', updateEmployee);
-router.delete('/:id', deleteEmployee);
+// Define the routes
+router.get("/", getEmployees); // Get all employees with pagination and filters
+router.get("/:id", getEmployee); // Get a specific employee by ID
+router.post("/", createEmployee); // Create a new employee
+router.put("/:id", updateEmployee); // Update an employee's data
+router.delete("/:id", deleteEmployee); // Delete an employee
+router.get("/role/:role", getEmployeesByRole); // Get employees by role
 
-// On exporte le router
 module.exports = router;

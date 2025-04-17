@@ -1,14 +1,14 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const ReportSchema = new mongoose.Schema({
   type: {
     type: String,
-    required: [true, 'Veuillez spécifier le type de rapport'],
-    enum: ['stock', 'sales', 'employees', 'custom'],
+    required: [true, "Veuillez spécifier le type de rapport"],
+    enum: ["stock", "sales", "employees", "custom"],
   },
   title: {
     type: String,
-    default: function() {
+    default: function () {
       return `Rapport ${this.type} - ${new Date().toLocaleDateString()}`;
     },
   },
@@ -17,7 +17,7 @@ const ReportSchema = new mongoose.Schema({
   },
   generatedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   data: {
@@ -33,4 +33,4 @@ const ReportSchema = new mongoose.Schema({
   },
 });
 
-module.exports = mongoose.model('Report', ReportSchema);
+module.exports = mongoose.model("Report", ReportSchema);

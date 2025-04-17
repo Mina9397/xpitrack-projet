@@ -1,6 +1,6 @@
-const jwt = require('jsonwebtoken');
-const User = require('../models/User');
-const config = require('../config/config');
+const jwt = require("jsonwebtoken");
+const User = require("../models/User");
+const config = require("../config/config");
 
 // Protéger les routes
 const protect = async (req, res, next) => {
@@ -8,27 +8,27 @@ const protect = async (req, res, next) => {
 
   if (
     req.headers.authorization &&
-    req.headers.authorization.startsWith('Bearer')
+    req.headers.authorization.startsWith("Bearer")
   ) {
     try {
       // Récupérer le token
-      token = req.headers.authorization.split(' ')[1];
+      token = req.headers.authorization.split(" ")[1];
 
       // Vérifier le token
       const decoded = jwt.verify(token, config.app.jwtSecret);
 
       // Récupérer l'utilisateur à partir du token
-      req.user = await User.findById(decoded.id).select('-password');
+      req.user = await User.findById(decoded.id).select("-password");
 
       next();
     } catch (error) {
       console.error(error);
-      res.status(401).json({ message: 'Non autorisé, token invalide' });
+      res.status(401).json({ message: "Non autorisé, token invalide" });
     }
   }
 
   if (!token) {
-    res.status(401).json({ message: 'Non autorisé, pas de token' });
+    res.status(401).json({ message: "Non autorisé, pas de token" });
   }
 };
 
@@ -36,15 +36,17 @@ const protect = async (req, res, next) => {
 const authorize = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({ message: 'Non autorisé, pas d\'utilisateur' });
+      return res
+        .status(401)
+        .json({ message: "Non autorisé, pas d'utilisateur" });
     }
-    
+
     if (!roles.includes(req.user.role)) {
-      return res.status(403).json({ 
-        message: `Le rôle ${req.user.role} n'est pas autorisé à accéder à cette ressource` 
+      return res.status(403).json({
+        message: `Le rôle ${req.user.role} n'est pas autorisé à accéder à cette ressource`,
       });
     }
-    
+
     next();
   };
 };

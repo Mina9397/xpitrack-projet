@@ -1,112 +1,88 @@
-<<<<<<< HEAD
 const express = require("express");
-const cors = require("cors");
+const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const path = require("path");
-const connectDB = require("./config/db");
-const errorHandler = require("./middleware/errorHandler");
-const config = require("./config/config");
-=======
-<<<<<<< HEAD
-const express = require('express');
-//const connectDB = require('./db');
- const db = require('./backend/config/db');
-const employeeRoutes = require('./routes/employeeRoutes');
-const Produit = require('./models/Produit');
+const cors = require("cors");
 
+// Initialize express app
 const app = express();
-connectDB();
-
-app.use(express.json());
-
-// Exemple de route test
-app.get('/', (req, res) => {
-  res.send('API fonctionnelle');
-});
-// Utilisation du routeur pour le chemin /employees
-app.use('/employees', employeeRoutes);
-// Route d'ajout d'un produit
-app.use('/produits', async (req, res)) 
-  const nouveauProduit = new Produit({
-    nom: req.body.nom,
-    prix: req.body.prix
-  });
-  try {
-    const produitSauvegarde =  nouveauProduit.save();
-    res.status(201).json(produitSauvegarde);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-
-
-// Route pour récupérer tous les produits
-app.get('/produits', async (req, res) => {
-  try {
-    const produits = await Produit.find();
-    res.json(produits);
-  } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-});
-
-
-const PORT = 5000;
-app.listen(PORT, () => console.log(`Serveur lancé sur le port ${PORT}`));
-=======
-const express = require("express")
-const cors = require("cors")
-const dotenv = require("dotenv")
-const path = require("path")
-const connectDB = require("./config/db")
-const errorHandler = require("./middleware/errorHandler")
-const config = require("./config/config")
->>>>>>> dcec347c1a6db1e5550891399b7b5932a8ec8421
-
-// Charger les variables d'environnement
-dotenv.config();
-
-// Connexion à la base de données
-connectDB();
-
-const app = express();
-app.use(helmet());
-
-// Activer la compression des réponses HTTP
-app.use(compression());
 
 // Middleware
-app.use(cors());
 app.use(express.json());
+app.use(cors());
 
-// Routes
-app.use("/api/auth", require("./routes/authRoutes"));
-app.use("/api/products", require("./routes/productRoutes"));
-app.use("/api/employees", require("./routes/employeeRoutes"));
-app.use("/api/reports", require("./routes/reportRoutes"));
+// Load environment variables
+dotenv.config();
 
-// Route de base
-app.get("/", (req, res) => {
-  res.json({ message: "Bienvenue sur l'API XPITrack" });
+// MongoDB connection
+mongoose
+  .connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  })
+  .then(() => console.log("✅ Connected to MongoDB"))
+  .catch((err) => console.error("❌ MongoDB connection error:", err));
+
+const PORT = process.env.PORT || 5000;
+
+// ✅ Import User Routes
+const userRoutes = require("./routes/userRoutes"); // Import user routes only once
+app.use("/api/users", userRoutes); // Mount user routes at /api/users
+
+// ✅ Import Alerts Routes
+const alertRoutes = require("./routes/alertRoutes"); // Import alert routes
+app.use("/api/alerts", alertRoutes); // Mount alert routes at /api/alerts
+
+// ✅ Product Schema (could also be moved to models/Product.js)
+const productSchema = new mongoose.Schema({
+  name: String,
+  stockStatus: String,
+  quantity: Number,
+});
+const Product = mongoose.model("Product", productSchema);
+
+// ✅ Audit Schema (could also be moved to models/Audit.js)
+const auditSchema = new mongoose.Schema({
+  product: String,
+  systemQty: Number,
+  physicalQty: Number,
+  difference: Number,
+});
+const Audit = mongoose.model("Audit", auditSchema);
+
+// Fetch all products
+app.get("/api/products", async (req, res) => {
+  try {
+    const products = await Product.find();
+    res.status(200).json(products);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
-// Middleware de gestion des erreurs
-app.use(errorHandler);
+// Add a new audit entry
+app.post("/api/audits", async (req, res) => {
+  const { product, systemQty, physicalQty } = req.body;
+  const difference = physicalQty - systemQty;
 
-const PORT = config.app.port;
+  try {
+    const newAudit = new Audit({
+      product,
+      systemQty,
+      physicalQty,
+      difference,
+    });
 
-const server = app.listen(PORT, () => {
-  console.log(`Serveur démarré sur le port ${PORT} en mode ${config.app.env}`);
+    await newAudit.save();
+    res.status(201).json({
+      message: "Audit entry added successfully",
+      audit: newAudit,
+    });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
-// Gérer les rejets de promesse non gérées
-process.on("unhandledRejection", (err, promise) => {
-  console.log(`Erreur: ${err.message}`);
-  // Fermer le serveur et quitter le processus
-<<<<<<< HEAD
-  server.close(() => process.exit(1));
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server is running on http://localhost:${PORT}`);
 });
-=======
-  server.close(() => process.exit(1))
-})
->>>>>>> 3eabd6452b97f088b41e4c5a40b1ee076e4bf985
->>>>>>> dcec347c1a6db1e5550891399b7b5932a8ec8421

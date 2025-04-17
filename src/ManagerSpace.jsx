@@ -1,33 +1,64 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
-import "./managersapace.css"; // Add your custom styles here
+import axios from "axios";
+import "./managersapace.css";
 
 const ManagerSpace = () => {
   const [auditData, setAuditData] = useState([]);
   const [form, setForm] = useState({
-    product: "",
+    product: "", // product will store the product _id
     systemQty: "",
     physicalQty: "",
   });
+  const [products, setProducts] = useState([]);
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
-  const handleAddAudit = () => {
-    const difference = form.physicalQty - form.systemQty;
-    const newAudit = {
-      id: Date.now(),
-      ...form,
-      difference,
+  // Fetch products from the backend
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const response = await axios.get("http://localhost:5000/api/products");
+        setProducts(response.data); // Store the entire product object in state
+      } catch (err) {
+        console.error("Error fetching products:", err);
+      }
     };
-    setAuditData([...auditData, newAudit]);
-    setForm({ product: "", systemQty: "", physicalQty: "" });
+
+    fetchProducts();
+  }, []);
+
+  // Handle changes in form fields
+  const handleChange = (e) => {
+    if (e.target.name === "product") {
+      const selectedProduct = products.find((p) => p.name === e.target.value); // Find the product by name
+      setForm({ ...form, product: selectedProduct._id }); // Store the product _id
+    } else {
+      setForm({ ...form, [e.target.name]: e.target.value });
+    }
   };
 
-  const handleDelete = (id) => {
-    setAuditData(auditData.filter((entry) => entry.id !== id));
+  // Add audit data
+  const handleAddAudit = async () => {
+    const { product, systemQty, physicalQty } = form;
+    const difference = physicalQty - systemQty;
+
+    // Send audit data to backend
+    try {
+      await axios.post("http://localhost:5000/api/audits", {
+        productId: product, // Send the product _id to the backend
+        systemQty,
+        physicalQty,
+      });
+      setAuditData([...auditData, { ...form, difference }]);
+      setForm({ product: "", systemQty: "", physicalQty: "" }); // Clear form
+    } catch (err) {
+      console.error("Error adding audit:", err);
+    }
+  };
+
+  // Delete audit entry
+  const handleDelete = (productId) => {
+    setAuditData(auditData.filter((entry) => entry.product !== productId)); // Remove by product _id
   };
 
   return (
@@ -35,35 +66,6 @@ const ManagerSpace = () => {
       <Sidebar />
       <div className="main-content">
         <Header title="Manager Space" />
-
-        {/* Inventory Bar */}
-        <div className="inventory-bar-container">
-          <div className="inventory-bar">
-            <div className="status-item out-of-stock">
-              <strong>Chicken</strong> is out of stock. Restock immediately!
-            </div>
-            <div className="status-item near-expiry">
-              <strong>Milk</strong>, will expire in 3 days. Consider discounting
-              it!
-            </div>
-            <div className="status-item low-stock">
-              <strong>Rice</strong>, has only 5 units left.
-            </div>
-          </div>
-          <div className="legend">
-            <div className="legend-item">
-              <span className="legend-color out-of-stock-color"></span>Out of
-              stock
-            </div>
-            <div className="legend-item">
-              <span className="legend-color near-expiry-color"></span>Near
-              Expiry
-            </div>
-            <div className="legend-item">
-              <span className="legend-color low-stock-color"></span>Low Stock
-            </div>
-          </div>
-        </div>
 
         {/* Inventory Audit */}
         <div className="inventory-audit">
@@ -73,9 +75,11 @@ const ManagerSpace = () => {
           <div className="audit-form">
             <select name="product" value={form.product} onChange={handleChange}>
               <option value="">Select a product</option>
-              <option value="Milk">Milk</option>
-              <option value="Chicken">Chicken</option>
-              <option value="Rice">Rice</option>
+              {products.map((product) => (
+                <option key={product._id} value={product.name}>
+                  {product.name}
+                </option>
+              ))}
             </select>
             <input
               type="number"
@@ -107,14 +111,14 @@ const ManagerSpace = () => {
               </tr>
             </thead>
             <tbody>
-              {auditData.map((entry) => (
-                <tr key={entry.id}>
+              {auditData.map((entry, index) => (
+                <tr key={index}>
                   <td>{entry.product}</td>
                   <td>{entry.systemQty}</td>
                   <td>{entry.physicalQty}</td>
                   <td>{entry.difference}</td>
                   <td>
-                    <button onClick={() => handleDelete(entry.id)}>
+                    <button onClick={() => handleDelete(entry.product)}>
                       Delete
                     </button>
                   </td>

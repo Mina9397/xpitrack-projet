@@ -1,40 +1,29 @@
-import React from "react"
-import { Link } from "react-router-dom"
+import React from "react";
+import { Link } from "react-router-dom";
 
-function Header({ title }) {
-  return React.createElement(
-    "header",
-    { className: "header" },
-    React.createElement("div", { className: "header-title" }, title),
-    React.createElement(
-      "div",
-      { className: "search-bar" },
-      React.createElement("input", {
-        type: "text",
-        placeholder: "Search here",
-      }),
-      React.createElement("button", null, React.createElement("i", { className: "fas fa-search" })),
-    ),
-    React.createElement(
-      "div",
-      { className: "user-profile" },
-      React.createElement(
-        "div",
-        { className: "notification-icon" },
-        React.createElement("i", { className: "fas fa-bell" }),
-        React.createElement("span", { className: "notification-badge" }, "3"),
-      ),
-      React.createElement(
-        Link,
-        { to: "/profile" },
-        React.createElement("img", {
-          src: "/images/avatar.jpg",
-          alt: "User Avatar",
-          className: "avatar",
-        }),
-      ),
-    ),
-  )
+function Header({ title, alertCount }) {
+  return (
+    <header className="header">
+      <div className="header-title">{title}</div>
+      <div className="search-bar">
+        <input type="text" placeholder="Search here" />
+        <button>
+          <i className="fas fa-search"></i>
+        </button>
+      </div>
+      <div className="user-profile">
+        <div className="notification-icon">
+          <i className="fas fa-bell"></i>
+          {alertCount > 0 && (
+            <span className="notification-badge">{alertCount}</span>
+          )}
+        </div>
+        <Link to="/profile">
+          <img src="/images/avatar.jpg" alt="User Avatar" className="avatar" />
+        </Link>
+      </div>
+    </header>
+  );
 }
 
-export default Header
+export default Header;

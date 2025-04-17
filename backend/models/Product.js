@@ -1,19 +1,20 @@
-const mongoose = require('mongoose');
-const config = require('../config/config');
+const mongoose = require("mongoose");
+
+const config = require("../config/config");
 
 const ProductSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: [true, 'Veuillez ajouter un nom de produit'],
+    required: [true, "Veuillez ajouter un nom de produit"],
     trim: true,
   },
   category: {
     type: String,
-    required: [true, 'Veuillez ajouter une catégorie'],
+    required: [true, "Veuillez ajouter une catégorie"],
   },
   quantity: {
     type: Number,
-    required: [true, 'Veuillez ajouter une quantité'],
+    required: [true, "Veuillez ajouter une quantité"],
     min: 0,
   },
   expiryDate: {
@@ -21,16 +22,16 @@ const ProductSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ['In Stock', 'Low Stock', 'Out of Stock', 'Near Expiry', 'Expired'],
-    default: 'In Stock',
+    enum: ["In Stock", "Low Stock", "Out of Stock", "Near Expiry", "Expired"],
+    default: "In Stock",
   },
   snag: {
     type: String,
-    default: '',
+    default: "",
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
   },
   createdAt: {
     type: Date,
@@ -42,32 +43,38 @@ const ProductSchema = new mongoose.Schema({
   },
 });
 
-// Middleware pour mettre à jour le statut en fonction de la quantité et de la date d'expiration
-ProductSchema.pre('save', function(next) {
-  // Mettre à jour le statut en fonction de la quantité
+// Middleware to update status based on quantity and expiry date
+ProductSchema.pre("save", function (next) {
+  // Update status based on quantity
   if (this.quantity === 0) {
-    this.status = 'Out of Stock';
+    this.status = "Out of Stock";
   } else if (this.quantity <= config.limits.lowStockThreshold) {
-    this.status = 'Low Stock';
+    this.status = "Low Stock";
   } else {
-    this.status = 'In Stock';
+    this.status = "In Stock";
   }
-  
-  // Vérifier la date d'expiration
+
+  // Check expiry date
   if (this.expiryDate) {
     const now = new Date();
     const expiryDate = new Date(this.expiryDate);
-    const daysUntilExpiry = Math.ceil((expiryDate - now) / (1000 * 60 * 60 * 24));
-    
+    const daysUntilExpiry = Math.ceil(
+      (expiryDate - now) / (1000 * 60 * 60 * 24)
+    );
+
     if (daysUntilExpiry <= 0) {
-      this.status = 'Expired';
+      this.status = "Expired";
     } else if (daysUntilExpiry <= config.limits.nearExpiryDays) {
-      this.status = 'Near Expiry';
+      this.status = "Near Expiry";
     }
   }
-  
+
   this.updatedAt = Date.now();
   next();
 });
 
-module.exports = mongoose.model('Product', ProductSchema);
+// Check if the model already exists to prevent overwriting
+const Product =
+  mongoose.models.Product || mongoose.model("Product", ProductSchema);
+
+module.exports = Product;
